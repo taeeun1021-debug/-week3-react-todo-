@@ -1,309 +1,104 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Week 2 과제: 나만의 Todo 리스트</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React Todo 앱</title>
+  <!-- Tailwind CSS CDN -->
 
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- React CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 font-sans min-h-screen">
+<body>
+  <div id="root"></div>
 
-    <!-- 전체 컨테이너 -->
-    <div class="max-w-2xl mx-auto p-6">
 
-        <!-- 헤더 -->
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-blue-600 mb-2">📝 나만의 Todo 리스트</h1>
-            <p class="text-gray-600">Week 2 과제 - HTML, CSS, JavaScript 종합 실습</p>
-        </header>
+  <script type="text/babel">
+    function TodoApp() {
+  const [todos, setTodos] = React.useState([]);
+  const [inputText, setInputText] = React.useState('');
+  const [filter, setFilter] = React.useState('all'); // 필터 상태
 
-        <!-- Todo 추가 영역 -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">할일 추가하기</h2>
+  return (
+    <div className="container mx-auto p-4 md:p-8 max-w-4xl">
+          <h1 className="text-2xl md:text-4xl font-bold text-center mb-6">Todo App</h1>
 
-            <!-- 입력 폼 -->
-            <div class="flex gap-2">
-                <input type="text"
-                       id="todoInput"
-                       placeholder="새로운 할일을 입력하세요..."
-                       class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+    <div className="flex flex-col md:flex-row gap-4 mb-6">
+      
 
-                <button onclick="addTodo()"
-                        class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                    추가
-                </button>
-            </div>
-        </div>
+      <input
+        type="text"
+        placeholder="할일을 입력하세요"
+        value={inputText}
+        onChange={(e) => setInputText(e.target.value)}
+      />
+      <button onClick={() => {
+        if(inputText.trim() !== '') {
+          setTodos([...todos, { id: Date.now(), text: inputText, completed: false }]);
+          setInputText('');
+        }
+      }}
+     className="w-full md:w-auto px-6 py-2 bg-blue-500 text-white rounded-lg"
+     >
+      추가
+      </button>
+      </div>
 
-        <!-- Todo 목록 영역 -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">할일 목록</h2>
+     
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
+        <button className="px-4 py-2 bg-gray-200 rounded" onClick={() => setFilter('all')}>전체</button>
+        <button className="px-4 py-2 bg-gray-200 rounded" onClick={() => setFilter('active')}>진행중</button>
+        <button className="px-4 py-2 bg-gray-200 rounded" onClick={() => setFilter('completed')}>완료</button>
+          </div>
 
-            <!-- Todo 항목들이 여기에 추가됩니다 -->
-            <div id="todoList" class="space-y-2">
-                <!-- 예시 Todo 항목 (JavaScript로 동적 생성할 예정) -->
-                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <input type="checkbox" class="w-5 h-5 text-blue-600">
-                    <span class="flex-1 text-gray-700">예시: JavaScript 공부하기</span>
-                    <button class="text-red-500 hover:text-red-700 px-2 py-1 rounded">삭제</button>
+    
+     <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {todos
+          .filter(todo => {
+            if(filter === 'all') return true;
+            if(filter === 'active') return !todo.completed;
+            if(filter === 'completed') return todo.completed;
+          })
+          .map(todo => (
+            <li key={todo.id} className="p-4 border rounded-lg flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <input
+                type="checkbox"
+                checked={todo.completed}
+                onChange={() => setTodos(todos.map(t =>
+                  t.id === todo.id ? { ...t, completed: !t.completed } : t
+                ))}
+              />
+              <span className={todo.completed ? 'line-through' : '' }>{todo.text}</span>
                 </div>
-            </div>
+              <button 
+              onClick={() => setTodos(todos.filter(t => t.id !== todo.id))}
+              className="px-2 py-1 bg-red-500 text-white rounded"
+              >
+                삭제
+              </button>
+            </li>
+        ))}
+      </ul>
 
-            <!-- 목록이 비어있을 때 메시지 -->
-            <div id="emptyMessage" class="text-center text-gray-500 py-8 hidden">
-                아직 할일이 없습니다. 새로운 할일을 추가해보세요! 🎯
-            </div>
-        </div>
-
-        <!-- 통계 정보 (선택 과제) -->
-        <div class="bg-white rounded-lg shadow-md p-6 mt-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-3">📊 진행 현황</h3>
-            <div class="grid grid-cols-3 gap-4 text-center">
-                <div>
-                    <div id="totalCount" class="text-2xl font-bold text-blue-600">0</div>
-                    <div class="text-sm text-gray-500">전체</div>
-                </div>
-                <div>
-                    <div id="completedCount" class="text-2xl font-bold text-green-600">0</div>
-                    <div class="text-sm text-gray-500">완료</div>
-                </div>
-                <div>
-                    <div id="remainingCount" class="text-2xl font-bold text-orange-600">0</div>
-                    <div class="text-sm text-gray-500">남은 일</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 과제 안내 -->
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-6">
-            <h3 class="text-lg font-semibold text-blue-800 mb-3">🎯 과제 요구사항</h3>
-            <div class="space-y-2 text-sm text-blue-700">
-                <div class="flex items-center gap-2">
-                    <span class="w-4 h-4 border-2 border-blue-500 rounded"></span>
-                    <span>✅ <strong>필수:</strong> 할일 추가 기능</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="w-4 h-4 border-2 border-blue-500 rounded"></span>
-                    <span>✅ <strong>필수:</strong> 할일 삭제 기능</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="w-4 h-4 border-2 border-blue-500 rounded"></span>
-                    <span>✅ <strong>필수:</strong> 완료 체크/해제 기능</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="w-4 h-4 border-2 border-blue-500 rounded"></span>
-                    <span>✅ <strong>필수:</strong> LocalStorage에 데이터 저장</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="w-4 h-4 border-2 border-orange-500 rounded"></span>
-                    <span>🟡 <strong>선택:</strong> 전체 삭제, 필터링 등 추가 기능</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- 개발 팁 -->
-        <div class="bg-green-50 border border-green-200 rounded-lg p-6 mt-6">
-            <h3 class="text-lg font-semibold text-green-800 mb-3">💡 개발 팁</h3>
-            <div class="space-y-2 text-sm text-green-700">
-                <p>• <strong>DOM 조작:</strong> document.getElementById(), querySelector() 활용</p>
-                <p>• <strong>이벤트:</strong> onclick, addEventListener 사용</p>
-                <p>• <strong>저장소:</strong> localStorage.setItem(), getItem() 활용</p>
-                <p>• <strong>배열:</strong> push(), splice(), filter() 메서드 활용</p>
-                <p>• <strong>디버깅:</strong> console.log()로 값 확인하기</p>
-            </div>
-        </div>
-
+     
+      <div className="mt-4 flex gap-4">
+        <p>전체: {todos.length}</p>
+        <p>완료: {todos.filter(todo => todo.completed).length}</p>
+        <p>진행중: {todos.filter(todo => !todo.completed).length}</p>
+      </div>
     </div>
+  );
+}
 
-    <!-- JavaScript 영역 -->
-    <script>
-        // 전역 변수
-        let todos = [
-            { text: "코딩 공부하기", completed: false},
-            { text: "운동하기", completed: true}
-        ];  // 할일 목록을 저장할 배열
+    
 
-        // 페이지 로드시 실행
-        window.onload = function() {
-            // 💡 여기에 LocalStorage에서 데이터 불러오는 코드 작성
-            console.log('Todo 앱이 시작되었습니다!');
-            console.log('💡 과제: LocalStorage에서 저장된 할일들을 불러와 화면에 표시하세요');
-
-            // 예시 데이터 (실제로는 LocalStorage에서 불러와야 함)
-            loadTodos();
-            renderTodos();
-        };
-
-        // 할일 추가 함수
-        function addTodo() {
-            const input = document.getElementById('todoInput');
-            const text = input.value.trim();
-
-            if(text === ''){
-                alert('할 일을 입력하세요!');
-                return;
-            }
-            const newTodo = {
-                text: text,
-                completed: false
-            };
-
-            todos.push(newTodo);
-
-            saveTodos();
-
-            renderTodos();
-
-            input.value = '';
-        
-            // 💡 과제: 입력값을 가져와서 todos 배열에 추가하고, 화면에 표시하는 코드 작성
-            console.log('할일이 추가됨!');
-
-            // 힌트:
-            // 1. input 요소에서 값 가져오기
-            // 2. 빈 값 체크하기
-            // 3. todos 배열에 새 항목 추가
-            // 4. LocalStorage에 저장
-            // 5. 화면 다시 그리기
-            // 6. input 값 초기화
-        }
-
-        // 할일 삭제 함수
-        function deleteTodo(index) {
-            todos.splice(index, 1);
-            saveTodos();
-            renderTodos();
-
-
-            // 💡 과제: 특정 인덱스의 할일을 삭제하는 코드 작성
-            console.log('삭제 완료! 남은 할일', todos);
-
-            // 힌트:
-            // 1. todos 배열에서 해당 인덱스 제거
-            // 2. LocalStorage에 저장
-            // 3. 화면 다시 그리기
-        }
-
-        // 할일 완료 토글 함수
-        function toggleTodo(index) {
-            todos[index].completed = !todos[index].completed;
-            saveTodos();
-            renderTodos();
-            // 💡 과제: 특정 인덱스의 할일 완료 상태를 바꾸는 코드 작성
-            console.log('할일 상태 변경됨:', todos[index]);
-            // 힌트:
-            // 1. todos[index].completed = !todos[index].completed
-            // 2. LocalStorage에 저장
-            // 3. 화면 다시 그리기
-        }
-
-        // LocalStorage에서 데이터 불러오기
-        function loadTodos() {
-            // 💡 과제: LocalStorage에서 'todos' 키로 저장된 데이터 불러오기
-            console.log('💡 과제: loadTodos() 함수를 완성하세요');
-
-            // 힌트:
-            // const savedTodos = localStorage.getItem('todos');
-            // if (savedTodos) {
-            //     todos = JSON.parse(savedTodos);
-            // }
-        }
-
-        // LocalStorage에 데이터 저장하기
-        function saveTodos() {
-            // 💡 과제: todos 배열을 LocalStorage에 저장하기
-            console.log('💡 과제: saveTodos() 함수를 완성하세요');
-
-            // 힌트:
-            // localStorage.setItem('todos', JSON.stringify(todos));
-        }
-
-        // 화면에 할일 목록 표시하기
-        function renderTodos() {
-
-            // 💡 과제: todos 배열의 내용을 HTML로 만들어서 화면에 표시
-            console.log('💡 과제: renderTodos() 함수를 완성하세요');
-
-            const todoList = document.getElementById('todoList');
-
-            // 💡 힌트:
-            // 1. todoList.innerHTML = ''; 로 기존 내용 지우기
-            // 2. todos 배열을 반복하면서 HTML 생성
-            // 3. 각 항목마다 체크박스, 텍스트, 삭제 버튼 포함
-            // 4. onclick 이벤트로 toggleTodo, deleteTodo 함수 연결
-
-            // 임시 메시지 (실제로는 동적으로 생성해야 함)
-            todoList.innerHTML = '';
-            if (todos.length === 0) {
-                todoList.innerHTML = '<div class="text-gray-500 text-enter py-4">아직 할 일이 없습니다. 추가해보세요! 🎯</div>';
-                updateStats();
-                return;
-            }
-
-            todos.forEach((todo, index) => {
-                const item = document.createElement('div');
-                item.className = 'flex items-center gap-3 p-3 bg-gray-50 rounded-lg';
-
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.className = 'w-5 h-5 text-blue-600';
-                checkbox.checked = todo.completed;
-                checkbox.onclick = () => toggleTodo(index);
-
-                const span = document.createElement('span');
-                span. textContent = todo.text;
-                span.className = 'flex-1 text-gray-700';
-                if (todo.completed){
-                    span.classList.add('line-through', 'text-gray-400');
-                }
-
-                const delBtn = document.createElement('button');
-                delBtn.textContent = '삭제';
-                delBtn.className = 'text-red-500 hover:text-red-700 px-2 py-1 rounded';
-                delBtn.onclick = () => deleteTodo(index);
-
-                item.appendChild(checkbox);
-                item.appendChild(span);
-                item.appendChild(delBtn);
-
-                todoList.appendChild(item);
-            
-            });
-
-            // 통계 업데이트
-            updateStats();
-        }
-
-        // 통계 정보 업데이트
-        function updateStats() {
-            // 💡 선택 과제: 전체, 완료, 남은 할일 개수 계산해서 표시
-            const total = todos.length;
-            const completed = todos.filter(todo => todo.completed).length;
-            const remaining = total - completed;
-
-            document.getElementById('totalCount').textContent = total;
-            document.getElementById('completedCount').textContent = completed;
-            document.getElementById('remainingCount').textContent = remaining;
-        }
-
-        // Enter 키로 할일 추가
-        document.addEventListener('DOMContentLoaded', function() {
-            const todoInput = document.getElementById('todoInput');
-            todoInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    addTodo();
-                }
-            });
-        });
-
-        // 개발자 도구 안내
-        console.log('🎉 Todo 앱 개발을 시작합니다!');
-        console.log('💡 개발자 도구(F12)를 열어서 console.log() 메시지들을 확인하세요');
-        console.log('📚 필요한 함수들: addTodo, deleteTodo, toggleTodo, loadTodos, saveTodos, renderTodos');
-        console.log('🚀 하나씩 완성해나가면서 기능을 구현해보세요!');
-
-    </script>
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<TodoApp />);
+  </script>
 </body>
 </html>
